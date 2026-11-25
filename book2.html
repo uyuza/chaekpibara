@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#253b34">
+  <meta name="description" content="책피바라 두 번째 책 『호의에 대하여』 — 사건의 판단에서 전하는 마음까지 이어지는 독서 전시">
+  <title>호의에 대하여 · 책피바라</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="book2.css">
+</head>
+<body class="at-entrance">
+  <div class="atmosphere" aria-hidden="true">
+    <div class="atmosphere__image is-current" id="scene-bg-a"></div>
+    <div class="atmosphere__image" id="scene-bg-b"></div>
+    <div class="atmosphere__tint"></div>
+    <div class="atmosphere__lights"></div>
+    <div class="memory-light" aria-hidden="true"></div>
+    <div class="dust-motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="fallen-leaves"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="entrance-glow" id="entrance-glow" aria-hidden="true"></div>
+  <div class="book-portal" id="book-portal" aria-hidden="true">
+    <div class="book-portal__volume">
+      <div class="book-portal__page book-portal__page--left"><span class="book-portal__flourish">❧</span><i></i><i></i><i></i><i></i></div>
+      <div class="book-portal__page book-portal__page--right"><div class="book-portal__title" id="portal-title"></div><div class="book-portal__author" id="portal-author"></div><span class="book-portal__sprig">❧</span><i></i><i></i></div>
+      <div class="book-portal__flipping-cover" id="portal-flip-cover"></div>
+      <div class="book-portal__spine"></div>
+    </div>
+  </div>
+  <header class="topbar">
+    <a href="index.html" class="topbar__back" aria-label="책피바라 메인으로">← 책피바라</a>
+    <span class="topbar__identity">BOOK II <span aria-hidden="true">/</span> <strong>호의에 대하여</strong></span>
+  </header>
+
+  <!-- 첫 화면 전체가 한 번의 터치/클릭으로 들어가는 입구입니다. -->
+  <main>
+    <section class="entrance" id="entrance" tabindex="0" role="button" aria-label="이야기 속으로 들어가기">
+      <div class="entrance__text">
+        <p class="kicker kicker--light">BOOK II · THE STORY OF KINDNESS</p>
+        <h1 id="hero-title">호의에<br>대하여</h1>
+        <p class="entrance__author" id="hero-author">문형배</p>
+        <span class="entrance__rule"></span>
+        <p class="entrance__subtitle">한 사건을 바라보는 시선에서<br>서로에게 남기는 마음까지</p>
+        <p class="entrance__touch"><span class="entrance__touch-icon">✦</span> 화면 어디든 한 번 터치해 주세요 <span aria-hidden="true">↗</span></p>
+      </div>
+      <div class="entrance__object" aria-hidden="true">
+        <div class="cover-book" id="cover-book"><div class="cover-book__pages"></div><div class="cover-book__front" id="cover-front"><div class="cover-book__border"></div><span class="cover-book__flower">✿</span><span class="cover-book__title">호의에<br>대하여</span><span class="cover-book__author">문형배</span></div></div>
+        <div class="entrance__reflection"></div>
+      </div>
+      <p class="entrance__bottom">책을 여는 순간 · 이야기가 시작됩니다.</p>
+    </section>
+
+    <!-- 장면은 책장 넘김 없이, 이미지와 내용을 교차 전환합니다. -->
+    <section id="exhibition" class="exhibition" aria-label="두 번째 책 전시" hidden>
+      <div class="exhibition__topline"><span class="exhibition__eyebrow" id="scene-subtitle">CHAPTER 01</span><span id="scene-count" class="exhibition__count" aria-live="polite">01 / 08</span></div>
+      <div class="exhibition__stage" id="scene-stage"><div id="scene-content" class="story-content" aria-live="polite"></div></div>
+      <nav class="story-nav" aria-label="이야기 장면 이동">
+        <button class="story-nav__arrow" id="story-prev" type="button" aria-label="이전 장면">←</button>
+        <div class="story-nav__rail" id="story-nav-dots"></div>
+        <button class="story-nav__arrow story-nav__arrow--next" id="story-next" type="button" aria-label="다음 장면">다음 <span aria-hidden="true">→</span></button>
+      </nav>
+      <div class="story-nav__helper">화면을 위로 밀거나 화살표를 눌러 이야기를 이어가세요</div>
+    </section>
+  </main>
+
+  <!-- 사건 파일 / 받은 메시지 / 감사 편지를 위한 가독성 우선 확대 화면 -->
+  <div id="letter-viewer" class="viewer" hidden role="dialog" aria-modal="true" aria-label="기록과 편지 읽기">
+    <div class="viewer__shade" data-close-viewer></div>
+    <div class="viewer__frame">
+      <button class="viewer__close" id="viewer-close" type="button" aria-label="닫기">✕</button>
+      <div class="viewer__sheet" id="viewer-sheet"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="book2.js"></script>
+</body>
+</html>

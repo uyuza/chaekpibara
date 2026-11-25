@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>하늘과 바람과 별과 인간 — 책피바라</title>
+  <meta name="theme-color" content="#05070f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="book1.css">
+</head>
+<body data-scene="cover">
+
+  <!-- 고정 배경: 별 + 변형되는 빛 (장면마다 모양이 바뀜) -->
+  <div id="cosmos" aria-hidden="true">
+    <div class="bgimg" id="bg-a"></div>
+    <div class="bgimg" id="bg-b"></div>
+    <div class="bgdim" id="bg-dim"></div>
+    <canvas id="stars"></canvas>
+    <div class="nebula nebula--a"></div>
+    <div class="nebula nebula--b"></div>
+    <div class="ring ring--1"><i></i></div>
+    <div class="ring ring--2"><i></i></div>
+    <div class="ring ring--3"><i></i></div>
+    <div class="orb"><span class="orb__core"></span></div>
+    <div class="lights">
+      <span class="light light--atom"></span>
+      <span class="light light--life"></span>
+      <span class="light light--human"></span>
+      <span class="light light--universe"></span>
+    </div>
+    <div class="horizon"></div>
+    <div class="bang-seeds" aria-hidden="true">
+      <div class="bang-seed bang-seed--atom"><i></i><span>원자 · 물질</span></div>
+      <div class="bang-seed bang-seed--life"><i></i><span>생명</span></div>
+      <div class="bang-seed bang-seed--human"><i></i><span>인간</span></div>
+      <div class="bang-seed bang-seed--universe"><i></i><span>우주</span></div>
+    </div>
+    <div class="bang-afterglow"></div>
+    <div class="bang"><i class="bang__flash"></i><i class="bang__ring"></i><i class="bang__ring bang__ring--2"></i><i class="bang__ring bang__ring--3"></i><i class="bang__ring bang__ring--4"></i></div>
+  </div>
+
+  <!-- 상단 -->
+  <header class="top">
+    <a class="top__home" href="index.html">← 책피바라</a>
+    <span class="top__book">첫 번째 책 · <b id="top-title"></b></span>
+    <select class="top__jump" id="book1-jump" aria-label="1권 장면 바로 이동"><option value="">장면 바로가기</option></select>
+  </header>
+
+  <!-- 오른쪽 진행 표시 -->
+  <nav class="dots" id="dots" aria-label="장면 이동"></nav>
+
+  <main id="scenes">
+
+    <!-- 0. 표지 -->
+    <section class="scene scene--cover" id="s-cover" data-key="cover" data-label="표지">
+      <div class="cover" id="cover">
+        <div class="cover__text">
+          <p class="fx cover__eyebrow">첫 번째 책</p>
+          <h1 class="fx cover__title" id="cover-title"></h1>
+          <p class="fx cover__author" id="cover-author"></p>
+          <p class="fx cover__tag" id="cover-tag"></p>
+          <p class="fx cover__summary" id="cover-summary"></p>
+          <div class="fx cover__actions">
+            <button class="btn-ghost" data-go="s-interlude">네 층위로 떠나기 ↓</button>
+            <button class="btn-text" id="layout-toggle" hidden>배치 바꾸기</button>
+          </div>
+        </div>
+        <div class="cover__book fx" id="cover-book"></div>
+      </div>
+      <p class="scroll-hint">스크롤</p>
+    </section>
+
+    <!-- 표지와 네 층위 사이: 책과 배경을 완전히 가리는 암전 장면 -->
+    <section class="scene scene--interlude" id="s-interlude" data-key="interlude" data-label="질문">
+      <div class="interlude__inner">
+        <p class="fx eyebrow" id="bridge-label"></p>
+        <h2 class="fx interlude__question" id="interlude-question"></h2>
+        <div class="fx interlude__rule" aria-hidden="true"></div>
+        <details class="layer-map" id="layer-map">
+          <summary>네 층위 미리보기 <span aria-hidden="true">⌄</span></summary>
+          <div class="layer-map__sheet">
+            <p class="eyebrow">층위 전시관</p>
+            <h2 id="contents-title"></h2>
+            <p class="contents__intro" id="contents-intro"></p>
+            <ol class="contents__list" id="contents-list"></ol>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- 2~5. 층위 4개 (JS가 만듦) -->
+    <div id="layer-scenes"></div>
+
+    <!-- 6. 하나로 -->
+    <section class="scene scene--converge" id="s-converge" data-key="converge" data-label="하나로">
+      <div class="converge">
+        <p class="fx eyebrow" id="conv-label"></p>
+        <h2 class="fx converge__title" id="conv-title"></h2>
+        <p class="fx converge__text" id="conv-text"></p>
+        <p class="fx converge__by" id="conv-by"></p>
+        <button class="fx bang-replay" id="bang-replay" type="button" aria-label="빅뱅 연출 다시 보기">✦ 빅뱅 다시 보기</button>
+      </div>
+    </section>
+
+    <!-- 7. 활동 기록 -->
+    <section class="scene scene--long" id="s-timeline" data-key="timeline" data-label="활동 기록">
+      <div class="long">
+        <p class="eyebrow">활동 기록</p>
+        <h2>이 책과 함께한 시간</h2>
+        <p class="timeline__hint">← 좌우로 넘겨 실제 독서토의·과학관 활동 사진을 살펴보세요 →</p>
+        <div class="discussion-actions" id="discussion-actions" aria-label="11월 10일 독서토의 상세 보기"></div>
+        <ol class="timeline" id="timeline-list"></ol>
+        <div class="timeline-outro">
+          <span>다음 책으로</span>
+          <a class="next__link" href="book2.html" id="next-link"></a>
+          <a class="next__home" href="index.html">책피바라 홈으로</a>
+        </div>
+        <p class="footer-note" id="footer-notice"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- v9: 스크롤형 전시 유지. 버튼 메뉴는 비표시, 스크롤과 우측 탐색 점은 사용 가능. -->
+  <nav class="scene-steps" aria-label="장면 앞뒤 이동">
+    <button id="scene-prev" type="button" aria-label="이전 장면">←</button>
+    <span id="scene-position" aria-live="polite">01 / 08</span>
+    <button id="scene-next" type="button" aria-label="다음 장면">→</button>
+  </nav>
+
+  <!-- 11월 10일 두 논제 상세: 추가 세로 페이지 없이 열람 -->
+  <div class="notes-viewer" id="notes-viewer" hidden role="dialog" aria-modal="true" aria-label="독서토의 상세">
+    <div class="notes-viewer__panel"><button type="button" id="notes-close" class="notes-viewer__close" aria-label="토의 내용 닫기">×</button><div id="notes-body"></div></div>
+  </div>
+
+  <!-- 사진 크게 보기 -->
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lightbox__close" id="lightbox-close" aria-label="닫기">×</button>
+    <img id="lightbox-img" alt="">
+    <p class="lightbox__caption" id="lightbox-caption"></p>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="book1.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>책피바라 — 원자에서 호의까지</title>
+  <meta name="description" content="국립목포대학교 도서관 2026 독서클럽 책피바라 활동 기록">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 상단 메뉴 (화면마다 내용이 바뀜) -->
+  <header class="nav" id="nav">
+    <a href="#home" class="nav__brand" id="nav-brand"></a>
+    <button class="nav__toggle" id="nav-toggle" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav__links" id="nav-links"></nav>
+  </header>
+
+  <!-- ===================== 홈 ===================== -->
+  <main class="view view--home" id="view-home">
+    <section class="hero home-scene" id="home-intro-scene">
+      <div class="sky sky--home" aria-hidden="true"></div>
+      <div class="hero__inner">
+        <p class="hero__eyebrow" id="home-subtitle"></p>
+        <h1 class="hero__team" id="home-team"></h1>
+        <p class="hero__theme" id="home-theme"></p>
+        <p class="hero__period" id="home-period"></p>
+        <p class="hero__intro" id="home-intro"></p>
+      </div>
+      <p class="hero__pick">읽고 싶은 책을 골라 주세요</p>
+      <div class="picks" id="home-books"></div>
+      <button class="home-scroll-cue" data-scroll="home-footsteps" type="button" aria-label="우리의 발자취로 이동">우리의 발자취 <span aria-hidden="true">↓</span></button>
+    </section>
+
+    <section class="path-portal home-scene" id="home-footsteps" aria-labelledby="path-portal-title">
+      <div class="path-portal__symbol" aria-hidden="true"><i class="path-portal__star">✦</i><i class="path-portal__path"></i><i class="path-portal__leaf">❧</i></div>
+      <div class="path-portal__body">
+        <p class="path-portal__eyebrow" id="path-portal-label"></p>
+        <h2 id="path-portal-title"></h2>
+        <p id="path-portal-description"></p>
+        <a href="footsteps.html" class="path-portal__button" id="path-portal-button"></a>
+        <button class="path-portal__back" data-scroll="home-intro-scene" type="button">↑ 두 권의 책으로</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== 1권: 우주 ===================== -->
+  <main class="view view--book1" id="view-book1" hidden>
+    <section class="bhero bhero--book1">
+      <div class="sky sky--deep" aria-hidden="true"></div>
+      <div class="orbit orbit--1" aria-hidden="true"></div>
+      <div class="orbit orbit--2" aria-hidden="true"></div>
+      <div class="planet" aria-hidden="true"></div>
+      <div class="bhero__inner">
+        <a href="#home" class="bhero__back">← 책피바라 홈</a>
+        <p class="bhero__label">첫 번째 책</p>
+        <h1 class="bhero__title" id="b1-title"></h1>
+        <p class="bhero__author" id="b1-author"></p>
+        <p class="bhero__tag" id="b1-tag"></p>
+        <p class="bhero__summary" id="b1-summary"></p>
+        <div class="bhero__jump">
+          <button data-scroll="b1-timeline">활동 기록</button>
+          <button data-scroll="b1-gallery">층위 전시관</button>
+        </div>
+      </div>
+      <div class="horizon" aria-hidden="true"></div>
+    </section>
+
+    <section class="section section--deep" id="b1-timeline">
+      <div class="section__head">
+        <span class="section__num">01</span>
+        <h2>이 책과 함께한 시간</h2>
+        <p>『하늘과 바람과 별과 인간』을 읽고, 이야기하고, 과학관에서 확인했습니다.</p>
+      </div>
+      <ol class="timeline timeline--dark" id="b1-timeline-list"></ol>
+    </section>
+
+    <section class="section section--deep2" id="b1-gallery">
+      <div class="section__head">
+        <span class="section__num">02</span>
+        <h2 id="gallery-title"></h2>
+        <p id="gallery-intro"></p>
+      </div>
+      <div class="layers" id="gallery-panels"></div>
+    </section>
+
+    <section class="next next--to-book2">
+      <p>다음 책으로</p>
+      <a href="#book2" id="b1-next"></a>
+    </section>
+  </main>
+
+  <!-- ===================== 2권: 호의 ===================== -->
+  <main class="view view--book2" id="view-book2" hidden>
+    <section class="bhero bhero--book2">
+      <div class="sun" aria-hidden="true"></div>
+      <div class="leaves" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="bhero__inner">
+        <a href="#home" class="bhero__back">← 책피바라 홈</a>
+        <p class="bhero__label">두 번째 책</p>
+        <h1 class="bhero__title" id="b2-title"></h1>
+        <p class="bhero__author" id="b2-author"></p>
+        <p class="bhero__tag" id="b2-tag"></p>
+        <p class="bhero__summary" id="b2-summary"></p>
+        <div class="bhero__jump">
+          <button data-scroll="b2-timeline">활동 기록</button>
+          <button data-scroll="b2-trial">모의재판</button>
+          <button data-scroll="b2-mailbox">호의 우체통</button>
+          <button data-scroll="b2-letters">감사 편지</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--warm" id="b2-timeline">
+      <div class="section__head">
+        <span class="section__num">01</span>
+        <h2>이 책과 함께한 시간</h2>
+        <p>『호의에 대하여』를 읽고, 저자의 이야기를 듣고, 직접 판결해 보았습니다.</p>
+      </div>
+      <ol class="timeline timeline--warm" id="b2-timeline-list"></ol>
+    </section>
+
+    <section class="section section--court" id="b2-trial">
+      <div class="section__head">
+        <span class="section__num">02</span>
+        <h2 id="trial-title"></h2>
+        <p>책 속 사례를 법정으로 옮겨, 우리라면 어떻게 판단했을지 물었습니다.</p>
+      </div>
+      <div class="trial" id="trial-body"></div>
+    </section>
+
+    <section class="section section--warm2" id="b2-mailbox">
+      <div class="section__head">
+        <span class="section__num">03</span>
+        <h2 id="mailbox-title"></h2>
+        <p id="mailbox-intro"></p>
+        <a class="btn btn--mail" id="mailbox-button" href="#" target="_blank" rel="noopener">
+          <span class="btn__icon">✉</span><span id="mailbox-button-text"></span>
+        </a>
+      </div>
+      <div class="mail-grid" id="mailbox-messages"></div>
+    </section>
+
+    <section class="section section--warm" id="b2-letters">
+      <div class="section__head">
+        <span class="section__num">04</span>
+        <h2 id="letters-title"></h2>
+        <p id="letters-intro"></p>
+      </div>
+      <div class="letters" id="letters-list"></div>
+    </section>
+
+    <section class="next next--to-home">
+      <p>두 책을 잇는</p>
+      <a href="#home-conclusion" id="b2-next">우리의 한 문장 →</a>
+    </section>
+  </main>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <p class="footer__notice" id="footer-notice"></p>
+    <p class="footer__credit" id="footer-credit"></p>
+  </footer>
+
+  <!-- 사진 크게 보기 -->
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lightbox__close" id="lightbox-close" aria-label="닫기">×</button>
+    <img id="lightbox-img" alt="">
+    <p class="lightbox__caption" id="lightbox-caption"></p>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

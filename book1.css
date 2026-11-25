@@ -1,0 +1,732 @@
+/* =========================================================
+   1권 『하늘과 바람과 별과 인간』 — 우주 화면
+   장면(scene)마다 배경의 빛(orb)·고리(ring)·성운(nebula)이
+   모양을 바꾸며 이어집니다. 색은 아래 :root 에서 바꿀 수 있습니다.
+   ========================================================= */
+
+:root {
+  --bg: #05070f;
+  --text: #eef0f7;
+  --muted: #a3abc9;
+  --gold: #f0dfa8;
+
+  /* 층위별 색 */
+  --c-atom: #8fe8ff;
+  --c-life: #7be0b0;
+  --c-human: #ffb57a;
+  --c-universe: #c7a3ff;
+
+  --serif: "Gowun Batang", "Noto Serif KR", serif;
+  --sans: "Noto Sans KR", system-ui, sans-serif;
+  --ease: cubic-bezier(.65, 0, .25, 1);
+  --morph: 1.6s;
+}
+
+* { box-sizing: border-box; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans);
+  line-height: 1.75; word-break: keep-all; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+h1, h2, h3 { font-family: var(--serif); font-weight: 700; margin: 0; line-height: 1.25; }
+p { margin: 0; }
+ol, ul { margin: 0; padding: 0; list-style: none; }
+button { font: inherit; cursor: pointer; }
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+.placeholder { font-style: italic; opacity: .7; }
+.eyebrow { font-size: .8rem; letter-spacing: .28em; color: var(--gold); text-transform: uppercase; }
+
+/* =========================================================
+   배경 (고정)
+   ========================================================= */
+/* 색 변수를 등록해 두면 그라데이션 색도 부드럽게 변합니다 (지원 안 하는 브라우저에선 바로 바뀜) */
+@property --oc1 { syntax: "<color>"; inherits: true; initial-value: #fff; }
+@property --oc2 { syntax: "<color>"; inherits: true; initial-value: #4a6bd6; }
+@property --oc3 { syntax: "<color>"; inherits: true; initial-value: #0b1230; }
+@property --ogc { syntax: "<color>"; inherits: true; initial-value: rgba(74,107,214,.45); }
+@property --rc  { syntax: "<color>"; inherits: true; initial-value: rgba(255,255,255,.4); }
+@property --nc  { syntax: "<color>"; inherits: true; initial-value: #1f3b8a; }
+@property --lc  { syntax: "<color>"; inherits: true; initial-value: #fff; }
+
+#cosmos { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--bg); transition: all var(--morph) var(--ease); }
+.nebula, .ring, .orb { transition-property: all; }
+body[data-scene="atom"] .ring i { animation-duration: 9s; }
+#stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* 장면별 배경 사진 (두 장을 번갈아 써서 부드럽게 교차) */
+.bgimg {
+  position: absolute; inset: -4%; background-size: cover; background-position: center; opacity: 0;
+  transform: scale(1.04); transition: opacity var(--morph) var(--ease), transform 6s linear;
+}
+.bgimg.is-on { opacity: 1; transform: scale(1); }
+.bgdim { position: absolute; inset: 0; background: #05070f; opacity: 0; transition: opacity var(--morph) var(--ease); }
+body.has-bg .bgdim { opacity: var(--dim, .45); }
+/* 사진이 있는 장면에서는 코드로 그린 빛·고리를 은은하게 낮춤 */
+body.has-bg .orb, body.has-bg .ring, body.has-bg .nebula, body.has-bg .horizon { opacity: 0; }
+body.has-bg #stars { opacity: .5; }
+body.is-bang #stars { opacity: 1; transition: opacity .2s; }
+/* 사진이 있으면 글을 한 열로 모아 사진의 빈 쪽에 두고, 전시 사진은 글 아래 작게 */
+body.has-bg .layer { grid-template-columns: minmax(0, 560px); justify-content: start; gap: 22px; }
+body.has-bg .layer--flip { justify-content: end; }
+body.has-bg .layer__photo, body.has-bg .layer--flip .layer__photo { order: 1; align-items: flex-start; }
+body.has-bg .frame { max-width: 300px; aspect-ratio: 4 / 3; }
+body.has-bg .layer__caption { text-align: left; }
+body.has-bg .layer__quote { background: rgba(5,7,15,.45); backdrop-filter: blur(3px); }
+@media (max-width: 900px) {
+  body.has-bg .bgdim { opacity: calc(var(--dim, .45) + .2); }   /* 좁은 화면에선 사진이 글 뒤에 깔리므로 조금 더 어둡게 */
+  body.has-bg .layer, body.has-bg .layer--flip { justify-content: start; }
+}
+body.has-bg .cover__title, body.has-bg .layer__name, body.has-bg .converge__title, body.has-bg .contents h2 { text-shadow: 0 2px 30px rgba(0,0,0,.8); }
+
+/* 성운 */
+.nebula {
+  position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; filter: blur(90px); opacity: .35;
+  transition: all var(--morph) var(--ease);
+  left: var(--nx, 50%); top: var(--ny, 50%); transform: translate(-50%, -50%) scale(var(--ns, 1));
+  background: radial-gradient(circle, var(--nc, #1f3b8a) 0%, transparent 65%);
+}
+.nebula--a { --nx: 20%; --ny: 110%; --nc: #1f3b8a; }
+.nebula--b { --nx: 80%; --ny: -10%; --nc: #3b1f6e; opacity: .25; }
+
+/* 빛(orb) — 장면마다 행성 / 원자핵 / 세포 / 태양 / 은하 / 하나의 빛으로 변함 */
+.orb {
+  position: absolute; left: var(--ox, 50%); top: var(--oy, 50%);
+  width: var(--os, 200px); height: var(--os, 200px); border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 35% 32%, var(--oc1, #fff) 0%, var(--oc2, #4a6bd6) 45%, var(--oc3, #0b1230) 100%);
+  box-shadow: 0 0 var(--og, 80px) var(--ogc, rgba(74,107,214,.45)), inset -30px -30px 80px rgba(0,0,0,.45);
+  opacity: var(--oo, 1);
+  transition: all var(--morph) var(--ease);
+}
+.orb::before { /* 은하 소용돌이 (우주 장면에서만 보임) */
+  content: ""; position: absolute; inset: -10%; border-radius: 50%; opacity: var(--spiral, 0);
+  background: conic-gradient(from 0deg, transparent 0 20%, rgba(255,255,255,.55) 30%, transparent 42%, transparent 55%, rgba(199,163,255,.6) 66%, transparent 80%);
+  filter: blur(14px); animation: spin 40s linear infinite; transition: opacity var(--morph) var(--ease);
+  mask: radial-gradient(circle, #000 0%, #000 45%, transparent 72%);
+  -webkit-mask: radial-gradient(circle, #000 0%, #000 45%, transparent 72%);
+}
+.orb__core { /* 중심 빛 */
+  position: absolute; left: 50%; top: 50%; width: 40%; height: 40%; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #fff 0%, rgba(255,255,255,.4) 40%, transparent 70%); opacity: var(--core, 0);
+  transition: opacity var(--morph) var(--ease);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 고리: 바깥 div 는 위치·크기·기울기(부드럽게 변함), 안쪽 i 는 계속 회전 */
+.ring {
+  position: absolute; left: var(--ox, 50%); top: var(--oy, 50%);
+  width: var(--rs, 300px); height: var(--rs, 300px); opacity: var(--ro, .3);
+  transform: translate(-50%, -50%) rotateX(var(--tilt, 0deg)) rotateZ(var(--rz, 0deg));
+  transition: all var(--morph) var(--ease);
+  filter: blur(var(--rb, 0px));
+}
+.ring i {
+  position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--rc, rgba(255,255,255,.4));
+  transition: border-color var(--morph) var(--ease);
+  animation: orbit var(--spd, 60s) linear infinite;
+}
+.ring i::after { /* 고리 위의 작은 점 (전자) */
+  content: ""; position: absolute; left: 50%; top: -4px; width: 8px; height: 8px; border-radius: 50%; margin-left: -4px;
+  background: #fff; box-shadow: 0 0 12px #fff, 0 0 24px var(--c-atom); opacity: var(--dot, 0); transition: opacity var(--morph);
+}
+.ring--1 { --tilt: 72deg; --rz: 0deg; }
+.ring--2 { --tilt: 72deg; --rz: 60deg; --spd: 75s; }
+.ring--3 { --tilt: 72deg; --rz: 120deg; --spd: 90s; }
+@keyframes orbit { to { transform: rotateZ(360deg); } }
+
+/* 네 층위의 빛 (우주 장면에서 나타나 '하나로' 장면에서 중앙으로 모임) */
+.light {
+  position: absolute; left: var(--lx, 50%); top: var(--ly, 50%); width: 22px; height: 22px; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(var(--lsc, 0)); opacity: var(--lo, 0);
+  background: radial-gradient(circle, #fff 0%, var(--lc) 40%, transparent 70%);
+  box-shadow: 0 0 30px var(--lc), 0 0 60px var(--lc);
+  transition: all 2.2s var(--ease), --lc .7s var(--ease);
+}
+.light--atom { --lc: var(--c-atom); }
+.light--life { --lc: var(--c-life); }
+.light--human { --lc: var(--c-human); }
+.light--universe { --lc: var(--c-universe); }
+
+
+/* ---------- 네 층위의 빛: 각 장면에서 태어나 따라 내려옴 ----------
+   태어나는 자리 = 그 장면의 주인공 옆, 그 뒤로는 화면 구석 '주머니'에 모여 있음 */
+/* 모인 빛은 오른쪽 진행 점(.dots) 위에 내려앉습니다 — 자리는 JS가 재서 --px/--py 로 넣어 줌 */
+.light.is-pocket { --lx: var(--px, 95%); --ly: var(--py, 50%); --lsc: .55; --lo: 1; }
+.light.is-born { animation: born 1.6s var(--ease); }
+@keyframes born { 0% { box-shadow: 0 0 0 0 var(--lc); } 60% { box-shadow: 0 0 40px 18px var(--lc); } 100% { box-shadow: 0 0 30px var(--lc), 0 0 60px var(--lc); } }
+.light.is-pocket { animation: breathe 3s ease-in-out infinite; }
+.light.is-pocket.is-leaving { --lsc: 1.6; }
+@keyframes breathe { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
+
+/* 원자 장면: 원자 빛 탄생 (핵 옆) */
+body[data-scene="atom"] .light--atom { --lx: 76%; --ly: 42%; --lsc: 1; --lo: 1; }
+@media (max-width: 900px) { body[data-scene="atom"] .light--atom { --lx: 64%; --ly: 20%; } }
+/* 생명 장면: 원자 빛은 주머니로, 생명 빛 탄생 (세포 옆) */
+body[data-scene="life"] .light--life { --lx: 24%; --ly: 40%; --lsc: 1; --lo: 1; }
+@media (max-width: 900px) { body[data-scene="life"] .light--life { --lx: 30%; --ly: 20%; } }
+/* 인간 장면 */
+body[data-scene="human"] .light--human { --lx: 84%; --ly: 56%; --lsc: 1; --lo: 1; }
+@media (max-width: 900px) { body[data-scene="human"] .light--human { --lx: 70%; --ly: 22%; } }
+/* 우주 장면 */
+body[data-scene="universe"] .light--universe { --lx: 26%; --ly: 46%; --lsc: 1; --lo: 1; }
+@media (max-width: 900px) { body[data-scene="universe"] .light--universe { --lx: 34%; --ly: 22%; } }
+/* 하나로: 네 빛이 중앙으로 모임 → 빅뱅 */
+body[data-scene="converge"] .light { --lx: 50%; --ly: 26%; --lsc: 1.6; --lo: 1; transition-duration: 2s; transition-timing-function: cubic-bezier(.7, 0, .3, 1); }
+body[data-scene="converge"] .light.is-pocket { --lx: var(--px, 95%); --ly: var(--py, 50%); --lsc: .55; --lo: 1; transition-duration: 1s; }
+/* 네 빛이 한곳에 겹치면 흰빛 하나로 합쳐짐 (빛은 모이면 흰색) */
+body.is-merged .light { --lc: #ffffff; --lsc: 2.2; transition-duration: .7s; box-shadow: 0 0 40px #fff, 0 0 90px rgba(255,255,255,.8), 0 0 140px rgba(240,223,168,.6); }
+body.is-bang .light { --lsc: 0; --lo: 0; transition-duration: .25s; }
+/* 그 다음 장면들: 빛은 사라짐 */
+body[data-scene="timeline"] .light, body[data-scene="next"] .light { --lx: 50%; --ly: 26%; --lo: 0; --lsc: 0; }
+
+/* 빅뱅 */
+.bang { position: absolute; left: 50%; top: 26%; width: 0; height: 0; pointer-events: none; }
+.bang i { position: absolute; left: 0; top: 0; border-radius: 50%; transform: translate(-50%, -50%); opacity: 0; }
+.bang__flash { width: 40vmax; height: 40vmax; background: radial-gradient(circle, #fff 0%, rgba(240,223,168,.9) 18%, rgba(240,223,168,0) 60%); }
+.bang__ring { width: 10px; height: 10px; border: 2px solid rgba(255,255,255,.9); box-shadow: 0 0 30px rgba(240,223,168,.8), inset 0 0 30px rgba(240,223,168,.5); }
+.bang__ring--2 { border-color: rgba(199,163,255,.7); }
+.bang__ring--3 { border-color: rgba(143,232,255,.6); }
+body.is-bang .bang__flash { animation: flash 1.6s ease-out forwards; }
+body.is-bang .bang__ring { animation: ripple 2.4s cubic-bezier(.1, .6, .3, 1) forwards; }
+body.is-bang .bang__ring--2 { animation-delay: .18s; animation-duration: 2.8s; }
+body.is-bang .bang__ring--3 { animation-delay: .36s; animation-duration: 3.2s; }
+@keyframes flash { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.1); } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); } }
+@keyframes ripple { 0% { opacity: 1; width: 10px; height: 10px; } 100% { opacity: 0; width: 240vmax; height: 240vmax; } }
+body.is-bang .bgimg.is-on { animation: shake .5s ease-out; }
+@keyframes shake { 0% { transform: scale(1); } 30% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+/* '하나로' 글은 빅뱅 뒤에 나타남 */
+.scene.scene--converge.is-active .fx { opacity: 0; transform: translateY(26px); transition-delay: 0s !important; }
+body.is-bang .scene--converge.is-active .fx { opacity: 1; transform: none; }
+body.is-bang .scene--converge.is-active .fx:nth-child(1) { transition-delay: .9s !important; }
+body.is-bang .scene--converge.is-active .fx:nth-child(2) { transition-delay: 1.1s !important; }
+body.is-bang .scene--converge.is-active .fx:nth-child(3) { transition-delay: 1.4s !important; }
+body.is-bang .scene--converge.is-active .fx:nth-child(4) { transition-delay: 1.7s !important; }
+@media (prefers-reduced-motion: reduce) {
+  .scene.scene--converge.is-active .fx { opacity: 1; transform: none; }
+  .bang i, .light { animation: none !important; }
+}
+
+/* 지평선 빛 (표지 장면) */
+.horizon {
+  position: absolute; left: 50%; bottom: -8vh; width: 160vw; height: 30vh; border-radius: 50%; transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(120,170,255,.35) 0%, transparent 60%);
+  opacity: var(--ho, 0); transition: opacity var(--morph) var(--ease);
+}
+
+/* ---------- 장면별 배경 모양 ---------- */
+/* 표지: 화면 아래 커다란 푸른 행성 */
+body[data-scene="cover"] #cosmos { --ox: 50%; --oy: calc(74% + 70vmax); --os: 140vmax; --oc1: #9fc4ff; --oc2: #2a4fb8; --oc3: #060a1f; --og: 160px; --ogc: rgba(90,140,255,.5); --ho: 1; --ro: 0; --oo: 1; }
+body[data-scene="cover"] .nebula--a { --ny: 90%; --nx: 50%; --ns: 1.3; }
+body[data-scene="cover"] .ring { --rs: 60vmax; --ro: 0; }
+
+/* 목차: 가운데 작은 빛 + 얇은 궤도 */
+body[data-scene="contents"] #cosmos { --ox: 50%; --oy: 24%; --os: 90px; --oc1: #fff; --oc2: #8fb3ff; --oc3: #1b2a6b; --og: 60px; --ogc: rgba(143,179,255,.35); --oo: .9; --core: .6; }
+body[data-scene="contents"] .ring { --ro: .22; --rc: rgba(255,255,255,.5); --tilt: 0deg; --oy: 24%; }
+body[data-scene="contents"] .ring--1 { --rs: 34vmin; } body[data-scene="contents"] .ring--2 { --rs: 52vmin; } body[data-scene="contents"] .ring--3 { --rs: 72vmin; }
+body[data-scene="contents"] .nebula--a { --nx: 30%; --ny: 60%; --nc: #1f3b8a; } body[data-scene="contents"] .nebula--b { --nx: 75%; --ny: 30%; }
+
+/* 원자·물질: 작고 눈부신 핵, 기울어진 전자 궤도 */
+body[data-scene="atom"] #cosmos { background: #040a12; --ox: 72%; --oy: 48%; --os: 110px; --oc1: #fff; --oc2: var(--c-atom); --oc3: #0d4a66; --og: 70px; --ogc: rgba(143,232,255,.6); --core: 1; }
+body[data-scene="atom"] .ring { --ro: .75; --rc: rgba(143,232,255,.7); --rs: 34vmin; --dot: 1; }
+body[data-scene="atom"] .ring--2 { --rs: 40vmin; } body[data-scene="atom"] .ring--3 { --rs: 46vmin; }
+body[data-scene="atom"] .nebula--a { --nx: 70%; --ny: 50%; --nc: #0d4a66; --ns: .9; } body[data-scene="atom"] .nebula--b { --nx: 15%; --ny: 80%; --nc: #0a2a4a; }
+
+/* 생명: 부드러운 녹색 세포, 흐릿한 막 */
+body[data-scene="life"] #cosmos { background: #040f0d; --ox: 28%; --oy: 50%; --os: 36vmin; --oc1: #d9fff0; --oc2: var(--c-life); --oc3: #0b3b2b; --og: 120px; --ogc: rgba(123,224,176,.4); --core: .5; }
+body[data-scene="life"] .ring { --ro: .5; --rc: rgba(123,224,176,.6); --tilt: 0deg; --rb: 2px; }
+body[data-scene="life"] .ring--1 { --rs: 44vmin; } body[data-scene="life"] .ring--2 { --rs: 50vmin; --rb: 6px; --ro: .3; } body[data-scene="life"] .ring--3 { --rs: 12vmin; --ro: .6; --rb: 1px; }
+body[data-scene="life"] .nebula--a { --nx: 75%; --ny: 50%; --nc: #0f5a3f; --ns: 1.1; } body[data-scene="life"] .nebula--b { --nx: 10%; --ny: 20%; --nc: #0a3a3a; }
+
+/* 인간: 따뜻한 빛, 낮게 뜬 해 */
+body[data-scene="human"] #cosmos { background: #110a06; --ox: 72%; --oy: 62%; --os: 46vmin; --oc1: #fff3d6; --oc2: var(--c-human); --oc3: #5a2a10; --og: 180px; --ogc: rgba(255,181,122,.45); --core: .35; }
+body[data-scene="human"] .ring { --ro: .25; --rc: rgba(255,181,122,.5); --tilt: 78deg; --rb: 0px; }
+body[data-scene="human"] .ring--1 { --rs: 70vmin; } body[data-scene="human"] .ring--2 { --rs: 90vmin; --ro: .14; } body[data-scene="human"] .ring--3 { --rs: 110vmin; --ro: .08; }
+body[data-scene="human"] .nebula--a { --nx: 70%; --ny: 80%; --nc: #7a3a16; --ns: 1.2; } body[data-scene="human"] .nebula--b { --nx: 20%; --ny: 10%; --nc: #3a1a3a; }
+
+/* 우주: 커다란 보랏빛 은하, 네 층위의 빛이 흩어져 있음 */
+body[data-scene="universe"] #cosmos { background: #07040f; --ox: 30%; --oy: 50%; --os: 70vmin; --oc1: #fff; --oc2: #6c4bb3; --oc3: #110a2a; --og: 200px; --ogc: rgba(199,163,255,.35); --spiral: 1; --core: .8; }
+body[data-scene="universe"] .ring { --ro: .18; --rc: rgba(199,163,255,.5); --tilt: 70deg; }
+body[data-scene="universe"] .ring--1 { --rs: 80vmin; } body[data-scene="universe"] .ring--2 { --rs: 100vmin; } body[data-scene="universe"] .ring--3 { --rs: 120vmin; --ro: .1; }
+body[data-scene="universe"] .nebula--a { --nx: 70%; --ny: 50%; --nc: #4a2a8a; --ns: 1.3; } body[data-scene="universe"] .nebula--b { --nx: 15%; --ny: 70%; --nc: #1f3b8a; }
+
+/* 하나로: 네 빛이 중앙으로 모여 금빛 하나가 됨 */
+body[data-scene="converge"] #cosmos { background: #06070f; --ox: 50%; --oy: 27%; --os: 18vmin; --oc1: #fff; --oc2: var(--gold); --oc3: #5a4a1a; --og: 220px; --ogc: rgba(240,223,168,.5); --core: 1; }
+body[data-scene="converge"] .ring { --ro: .35; --rc: rgba(240,223,168,.6); --tilt: 0deg; --rb: 0px; }
+body[data-scene="converge"] .ring--1 { --rs: 50vmin; } body[data-scene="converge"] .ring--2 { --rs: 80vmin; --ro: .18; } body[data-scene="converge"] .ring--3 { --rs: 115vmin; --ro: .08; }
+body[data-scene="converge"] .nebula--a { --nx: 50%; --ny: 50%; --nc: #5a4a1a; --ns: 1; } body[data-scene="converge"] .nebula--b { --nx: 50%; --ny: 50%; --nc: #1f3b8a; --ns: 1.4; }
+
+/* 활동 기록 / 다음: 배경을 어둡게 낮춤 */
+body[data-scene="timeline"] #cosmos, body[data-scene="next"] #cosmos { --ox: 50%; --oy: 115%; --os: 120vmax; --oc1: #6a86d6; --oc2: #1b2a6b; --oc3: #05070f; --og: 100px; --ogc: rgba(60,90,200,.3); --oo: .8; }
+body[data-scene="timeline"] .ring, body[data-scene="next"] .ring { --ro: 0; }
+body[data-scene="next"] #cosmos { --oy: 108%; --ho: 1; }
+body[data-scene="timeline"] .nebula--a, body[data-scene="next"] .nebula--a { --nx: 50%; --ny: 100%; --nc: #1f3b8a; }
+
+/* =========================================================
+   상단 · 진행 점
+   ========================================================= */
+.top {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20; display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 22px; font-size: .85rem; color: var(--muted);
+  background: linear-gradient(180deg, rgba(5,7,15,.75), transparent); pointer-events: none;
+}
+.top a, .top span { pointer-events: auto; }
+.top__home { text-decoration: none; transition: color .2s; } .top__home:hover { color: #fff; }
+.top__book b { font-family: var(--serif); font-weight: 700; color: var(--text); }
+.top__book b::before { content: "『"; } .top__book b::after { content: "』"; }
+
+.dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 20; display: flex; flex-direction: column; gap: 14px; }
+.dots button {
+  position: relative; width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,.5); background: transparent; padding: 0;
+  transition: background .3s, transform .3s, border-color .3s;
+}
+.dots button::after {
+  content: attr(data-label); position: absolute; right: 20px; top: 50%; transform: translateY(-50%); white-space: nowrap;
+  font-size: .75rem; color: var(--muted); opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.dots button:hover::after, .dots button.is-active::after { opacity: 1; }
+.dots button.is-active { background: var(--gold); border-color: var(--gold); transform: scale(1.3); box-shadow: 0 0 10px var(--gold); }
+/* 층위 장면: 현재 점은 그 층위 색, 빛이 내려앉은 점은 그 색으로 켜짐 */
+.dots button[data-color] { --dc: var(--gold); }
+.dots button.is-lit { background: var(--dc); border-color: var(--dc); box-shadow: 0 0 12px var(--dc); }
+.dots button.is-active[data-color] { background: var(--dc); border-color: var(--dc); box-shadow: 0 0 12px var(--dc); }
+.dots button.is-active[data-color]::after { color: var(--dc); }
+body.is-bang .dots button.is-lit { background: transparent; border-color: rgba(255,255,255,.5); box-shadow: none; }
+@media (max-width: 760px) { .dots { right: 10px; gap: 11px; } .dots button::after { display: none; } .top__book { display: none; } }
+
+/* =========================================================
+   장면 공통
+   ========================================================= */
+#scenes { position: relative; z-index: 1; }
+.scene {
+  position: relative; min-height: 100vh; min-height: 100svh; scroll-snap-align: start; scroll-snap-stop: always;
+  display: flex; align-items: center; justify-content: center; padding: 90px 24px 70px;
+}
+.scene--long { min-height: auto; align-items: flex-start; padding: 110px 24px 90px; scroll-snap-align: start; }
+
+/* 글자가 장면에 들어올 때 떠오름 */
+.fx { opacity: 0; transform: translateY(26px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+.scene.is-active .fx { opacity: 1; transform: none; }
+.scene.is-active .fx:nth-child(1) { transition-delay: .1s } .scene.is-active .fx:nth-child(2) { transition-delay: .22s }
+.scene.is-active .fx:nth-child(3) { transition-delay: .34s } .scene.is-active .fx:nth-child(4) { transition-delay: .46s }
+.scene.is-active .fx:nth-child(5) { transition-delay: .58s } .scene.is-active .fx:nth-child(6) { transition-delay: .7s }
+
+.btn-ghost {
+  background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.45); padding: 11px 22px; border-radius: 999px; font-size: .9rem;
+  transition: background .25s, border-color .25s, transform .25s;
+}
+.btn-ghost:hover { background: rgba(240,223,168,.12); border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+.btn-text { background: none; border: 0; color: var(--muted); font-size: .82rem; text-decoration: underline dotted; }
+.btn-text:hover { color: #fff; }
+
+/* =========================================================
+   0. 표지
+   ========================================================= */
+.cover { width: 100%; max-width: 1080px; display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 48px; }
+.cover__eyebrow { font-size: .82rem; letter-spacing: .28em; color: var(--muted); margin-bottom: 18px; }
+.cover__title { font-size: clamp(2.2rem, 5.2vw, 4.2rem); margin-bottom: 14px; }
+.cover__title::before { content: "『"; margin-left: -.5em; } .cover__title::after { content: "』"; }
+.cover__author { font-size: 1.05rem; color: var(--muted); margin-bottom: 22px; }
+.cover__tag { font-family: var(--serif); font-size: clamp(1.05rem, 2vw, 1.3rem); color: var(--gold); margin-bottom: 20px; line-height: 1.6; }
+.cover__summary { max-width: 520px; color: #d3d8ea; margin-bottom: 36px; line-height: 1.9; }
+.cover__actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+
+.cover__book { display: flex; justify-content: center; perspective: 1400px; }
+.book3d {
+  position: relative; width: min(340px, 70vw); aspect-ratio: 2 / 3; border-radius: 4px 12px 12px 4px; overflow: hidden;
+  transform: rotateY(-18deg) rotateX(4deg); transform-style: preserve-3d;
+  box-shadow: -30px 40px 80px rgba(0,0,0,.7), 0 0 80px rgba(120,160,255,.15);
+  animation: float 7s ease-in-out infinite;
+}
+.book3d img { width: 100%; height: 100%; object-fit: cover; }
+.book3d::before { /* 책등 그림자 */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7%; background: linear-gradient(90deg, rgba(0,0,0,.55), transparent); z-index: 2;
+}
+.book3d::after { /* 표면 반사 */
+  content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255,255,255,.18) 0%, transparent 35%, transparent 70%, rgba(255,255,255,.06) 100%); z-index: 2; pointer-events: none;
+}
+.book3d--empty { /* 표지 사진이 없을 때: 글자로 된 표지 */
+  display: flex; flex-direction: column; justify-content: space-between; padding: 30px 26px;
+  background: linear-gradient(160deg, #15224f 0%, #0a1030 60%, #05070f 100%); border: 1px solid rgba(255,255,255,.12);
+}
+.book3d--empty .t { font-family: var(--serif); font-size: clamp(1.3rem, 2.6vw, 1.8rem); line-height: 1.4; }
+.book3d--empty .a { font-size: .9rem; color: var(--muted); }
+.book3d--empty .hint { font-size: .72rem; color: var(--muted); opacity: .8; }
+.book3d--empty .hint code { display: block; font-size: .7rem; }
+@keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+
+/* 가운데 배치 */
+.cover--center { grid-template-columns: 1fr; text-align: center; gap: 36px; }
+.cover--center .cover__book { order: -1; }
+.cover--center .book3d { width: min(200px, 50vw); transform: rotateY(0) rotateX(0); border-radius: 4px 10px 10px 4px; box-shadow: 0 40px 80px rgba(0,0,0,.7), 0 0 80px rgba(120,160,255,.15); }
+.cover--center .cover__title::before { margin-left: 0; }
+.cover--center .cover__summary { margin-left: auto; margin-right: auto; }
+.cover--center .cover__actions { justify-content: center; }
+
+.scroll-hint { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); font-size: .72rem; letter-spacing: .3em; color: var(--muted); animation: bob 1.8s ease-in-out infinite; }
+.scroll-hint::after { content: ""; display: block; width: 1px; height: 28px; background: linear-gradient(var(--muted), transparent); margin: 8px auto 0; }
+@keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 6px; } }
+
+@media (max-width: 820px) {
+  .cover { grid-template-columns: 1fr; text-align: center; gap: 30px; }
+  .cover__book { order: -1; }
+  .book3d { width: min(200px, 50vw); transform: rotateY(-10deg); }
+  .cover__title::before { margin-left: 0; }
+  .cover__summary { margin-left: auto; margin-right: auto; }
+  .cover__actions { justify-content: center; }
+}
+
+/* =========================================================
+   1. 목차
+   ========================================================= */
+.contents { text-align: center; max-width: 760px; margin-top: 16vh; }
+.contents h2 { font-size: clamp(2rem, 4.5vw, 3rem); margin: 14px 0 18px; }
+.contents__intro { color: #d3d8ea; max-width: 560px; margin: 0 auto 44px; }
+.contents__list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.contents__list li button {
+  width: 100%; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 22px 12px 18px; color: var(--text);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; transition: background .3s, transform .3s, border-color .3s;
+}
+.contents__list li button:hover { background: rgba(255,255,255,.08); transform: translateY(-4px); border-color: var(--lc); }
+.contents__list .ico { font-size: 1.5rem; color: var(--lc); filter: drop-shadow(0 0 10px var(--lc)); }
+.contents__list .nm { font-family: var(--serif); font-size: 1.05rem; }
+.contents__list .ow { font-size: .75rem; color: var(--muted); }
+.contents__list .no { font-size: .7rem; letter-spacing: .2em; color: var(--lc); }
+@media (max-width: 640px) { .contents__list { grid-template-columns: repeat(2, 1fr); } }
+
+/* =========================================================
+   2~5. 층위
+   ========================================================= */
+.layer { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+.layer__no { font-size: .78rem; letter-spacing: .3em; color: var(--lc); margin-bottom: 10px; }
+.layer__name { font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1.1; margin-bottom: 8px; display: flex; align-items: center; gap: 16px; }
+.layer__name .ico { font-size: .55em; color: var(--lc); filter: drop-shadow(0 0 12px var(--lc)); }
+.layer__owner { display: inline-block; font-size: .78rem; color: var(--muted); border: 1px solid rgba(255,255,255,.18); padding: 3px 12px; border-radius: 999px; margin-bottom: 26px; }
+.layer__quote {
+  margin: 0 0 24px; padding: 18px 22px; border-left: 2px solid var(--lc); background: rgba(255,255,255,.04); border-radius: 0 12px 12px 0;
+  font-family: var(--serif); font-size: 1.08rem; line-height: 1.85;
+}
+.layer__quote cite { display: block; font-style: normal; font-size: .8rem; color: var(--muted); margin-top: 8px; }
+.layer__essay-label { font-size: .78rem; letter-spacing: .14em; color: var(--lc); margin-bottom: 8px; }
+.layer__essay { color: #d3d8ea; font-size: .97rem; line-height: 1.9; white-space: pre-line; max-width: 520px; }
+
+.layer__photo { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.frame {
+  position: relative; width: 100%; max-width: 440px; aspect-ratio: 4 / 5; border-radius: 16px; overflow: hidden; cursor: zoom-in;
+  border: 1px solid rgba(255,255,255,.15); box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 60px color-mix(in srgb, var(--lc) 25%, transparent);
+  background: rgba(255,255,255,.03);
+}
+.frame img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+.frame:hover img { transform: scale(1.04); }
+.frame--empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: default; color: var(--muted); font-size: .82rem; text-align: center; padding: 20px;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 12px, transparent 12px 24px); }
+.frame--empty .ic { font-size: 1.8rem; opacity: .6; } .frame--empty code { font-size: .72rem; opacity: .8; word-break: break-all; }
+.layer__caption { font-size: .8rem; color: var(--muted); text-align: center; max-width: 440px; }
+
+.layer--flip .layer__photo { order: -1; } /* 사진을 왼쪽에 두고 싶을 때 (생명·우주 장면) */
+
+@media (max-width: 900px) {
+  .layer { grid-template-columns: 1fr; gap: 28px; }
+  .layer__photo, .layer--flip .layer__photo { order: 0; }
+  .frame { max-width: 360px; aspect-ratio: 4 / 3; }
+  .layer__essay { max-width: none; }
+  body[data-scene="atom"] #cosmos, body[data-scene="life"] #cosmos, body[data-scene="human"] #cosmos, body[data-scene="universe"] #cosmos { --ox: 78%; --oy: 15%; --os: 22vmin; }
+  body[data-scene="atom"] #cosmos { --os: 14vmin; } body[data-scene="atom"] .ring { --rs: 24vmin; } body[data-scene="atom"] .ring--2 { --rs: 29vmin; } body[data-scene="atom"] .ring--3 { --rs: 34vmin; }
+  body[data-scene="universe"] #cosmos { --os: 36vmin; }
+  .layer { padding-top: 10vh; }
+}
+
+/* =========================================================
+   6. 하나로
+   ========================================================= */
+.converge { text-align: center; max-width: 820px; margin-top: 22vh; }
+.converge__title { font-size: clamp(1.7rem, 4.2vw, 3rem); line-height: 1.45; margin: 16px 0 26px; }
+.converge__title::before { content: "“"; color: var(--gold); margin-right: .1em; } .converge__title::after { content: "”"; color: var(--gold); margin-left: .1em; }
+.converge__text { color: #d3d8ea; line-height: 1.95; white-space: pre-line; max-width: 640px; margin: 0 auto 26px; }
+.converge__by { font-family: var(--serif); color: var(--gold); letter-spacing: .1em; }
+.converge__by::before { content: "— "; }
+
+/* =========================================================
+   7. 활동 기록
+   ========================================================= */
+.long { width: 100%; max-width: 820px; }
+.long h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 10px 0 48px; }
+.timeline { position: relative; padding-left: 36px; }
+.timeline::before { content: ""; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 1px; background: rgba(255,255,255,.2); }
+.tl-item { position: relative; padding-bottom: 52px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before { content: ""; position: absolute; left: -32px; top: 10px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--gold); box-shadow: 0 0 12px rgba(240,223,168,.5); }
+.tl-date { font-family: var(--serif); font-size: .88rem; color: var(--muted); letter-spacing: .05em; }
+.tl-title { font-size: 1.3rem; margin: 4px 0 10px; }
+.tl-summary { color: #d3d8ea; max-width: 640px; }
+.tl-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; max-width: 640px; }
+.tl-photos.one { grid-template-columns: minmax(0, 420px); }
+.tl-photos .frame { aspect-ratio: 4 / 3; border-radius: 12px; max-width: none; --lc: #6a86d6; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+@media (max-width: 520px) { .tl-photos { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   8. 다음
+   ========================================================= */
+.nextbox { text-align: center; }
+.next__link { display: block; font-family: var(--serif); font-size: clamp(1.4rem, 3.4vw, 2.2rem); text-decoration: none; margin: 14px 0 22px; color: var(--text); transition: color .2s; }
+.next__link:hover { color: var(--gold); }
+.next__link::before { content: "『"; } .next__link::after { content: "』 →"; }
+.next__home { font-size: .9rem; color: var(--muted); }
+.footer-note { margin-top: 70px; font-size: .78rem; color: var(--muted); max-width: 560px; line-height: 1.8; }
+
+/* =========================================================
+   라이트박스
+   ========================================================= */
+.lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(5,7,15,.95); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 14px; }
+.lightbox[hidden] { display: none; }
+.lightbox img { max-width: 100%; max-height: 82vh; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+.lightbox__caption { color: #d3d8ea; font-size: .9rem; text-align: center; }
+.lightbox__close { position: absolute; top: 14px; right: 18px; background: none; border: 0; color: #fff; font-size: 2.2rem; line-height: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-snap-type: none; }
+  .fx { opacity: 1; transform: none; transition: none; }
+  .orb, .ring, .nebula, .light, .horizon, #cosmos { transition: none; }
+  .ring.is-spinning, .orb::before, .book3d, .scroll-hint { animation: none; }
+}
+
+
+/* ====================== 융합개선 v6 · 첫 번째 책 ====================== */
+/* 암전은 실제 검정 배경. 이전 우주 사진이 비쳐 보이지 않습니다. */
+.scene--interlude { background: #010206; z-index: 4; isolation: isolate; text-align: center; }
+.interlude__inner { width: min(840px, 90vw); margin: auto; padding: 2rem 0; }
+.interlude__question { font-family: var(--serif); font-size: clamp(1.7rem, 5vw, 3.7rem); font-weight: 400; line-height: 1.55; letter-spacing: -.035em; margin: 20px auto; max-width: 800px; }
+.interlude__rule { width: 84px; height: 1px; background: linear-gradient(90deg, transparent, #c5d7f9, transparent); margin: 30px auto 0; }
+body[data-scene="interlude"] .light, body[data-scene="converge"] .light { opacity: 0 !important; --lo: 0; --lsc: 0; }
+body[data-scene="converge"] .orb { opacity: .10; box-shadow: none; }
+body[data-scene="converge"] .bang, body.is-connected .bang { display: none !important; }
+body[data-scene="converge"] .ring { opacity: .06; }
+.scene--converge { isolation: isolate; align-items: flex-end; padding-bottom: clamp(35px, 7vh, 92px); }
+.scene--converge::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(4,7,17,.46) 43%, rgba(4,7,17,.86) 78%, rgba(4,7,17,.95)); z-index: -1; }
+.constellation { position: absolute; z-index: 0; top: clamp(62px, 7vh, 90px); left: 50%; transform: translateX(-50%); width: min(960px, 94vw); height: min(54vh, 520px); pointer-events: none; }
+.constellation svg { width: 100%; height: 100%; overflow: visible; }
+.constellation__trace, .constellation__inner { fill: none; stroke: url(#cosmos-link); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 1500; stroke-dashoffset: 1500; opacity: .8; filter: drop-shadow(0 0 10px rgba(164,201,255,.56)); }
+.constellation__inner { stroke-width: 1; opacity: .4; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+.is-connected .constellation__trace { animation: trace-lines 2.8s .18s cubic-bezier(.4,0,.2,1) forwards; }
+.is-connected .constellation__inner { animation: trace-lines 3.3s .65s ease forwards; }
+@keyframes trace-lines { to { stroke-dashoffset: 0; } }
+.constellation__star { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.constellation__star .halo { fill: currentColor; opacity: .15; filter: url(#soft-glow); }
+.constellation__star .core { fill: #fff; filter: url(#soft-glow); }
+.constellation__star .spark { fill: currentColor; }
+.constellation__star text { text-anchor: middle; font-family: var(--sans); font-size: 18px; fill: #f1f3ff; letter-spacing: 1px; }
+.star--atom { color: #87e8ff; } .star--life { color: #9ce9bb; } .star--human { color: #ffbd9b; } .star--universe { color: #c7a3ff; }
+.is-connected .constellation__star { animation: star-reveal .8s .45s ease-out forwards, gentle-star 5s 2s ease-in-out infinite; }
+.is-connected .star--life { animation-delay: .8s, 2.35s; }
+.is-connected .star--human { animation-delay: 1.1s, 2.6s; }
+.is-connected .star--universe { animation-delay: 1.4s, 3s; }
+@keyframes star-reveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gentle-star { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.38); } }
+.scene.scene--converge.is-active .fx { opacity: 0; transform: translateY(22px); transition-delay: 0s !important; }
+body.is-resolved .scene--converge.is-active .fx { opacity: 1; transform: translateY(0); }
+.scene--converge .converge { z-index: 2; position: relative; margin-top: 0; width: 100%; max-width: 790px; padding: 12px 22px 8px; }
+.scene--converge .converge__title { font-size: clamp(1.35rem, 3.1vw, 2.35rem); margin: 8px auto 12px; }
+.scene--converge .converge__text { font-size: clamp(.85rem, 1.4vw, 1rem); margin-bottom: 12px; }
+@media (max-width: 640px) {
+  .scene--converge { padding: 70px 18px 35px; }
+  .constellation { top: 10vh; height: 41vh; width: 106vw; max-width: none; }
+  .constellation__star text { font-size: 23px; }
+  .scene--converge .converge { padding: 12px 8px; }
+  .scene--converge .converge__text { line-height: 1.65; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .constellation__trace, .constellation__inner { stroke-dashoffset: 0 !important; animation: none !important; }
+  .constellation__star { opacity: 1 !important; animation: none !important; }
+  .scene.scene--converge.is-active .fx { opacity: 1 !important; transform: none !important; }
+}
+
+@media (max-width: 640px) { .constellation { width: 100vw; } }
+
+/* v7: 1권은 전시형 스크롤 유지, 작은 화면에서도 바로 원하는 층위로 이동 */
+html { scroll-snap-type: y proximity; }
+.scene { scroll-snap-stop: normal; }
+.top__jump { pointer-events: auto; border-radius: 999px; background: rgba(11, 19, 42, .76); color: #e9eefc; border: 1px solid rgba(226,233,255,.33); padding: 8px 30px 8px 13px; min-width: 120px; max-width: 180px; font: 500 .79rem/1.4 "Noto Sans KR", system-ui, sans-serif; cursor: pointer; backdrop-filter: blur(9px); }
+.top__jump:focus-visible { outline: 2px solid #8edafa; outline-offset: 3px; }
+.top__jump option { background: #111b33; }
+@media(max-width:760px) { .top__jump { max-width: 142px; font-size: .76rem; padding: 8px 23px 8px 10px; } }
+
+
+/* ============== V8 / first book: compact story, original Big Bang restored ============== */
+/* The isolated blackout stays untouched until the visitor chooses the 4-layer overview. */
+.scene--interlude { min-height: 100svh; }
+.interlude__inner { display: flex; flex-direction: column; align-items: center; justify-content: center; width: min(850px,94vw); }
+.layer-map { position: absolute; bottom: clamp(18px, 4vh, 43px); left: 50%; transform: translateX(-50%); width: min(800px,92vw); z-index: 8; }
+.layer-map > summary { width: max-content; margin: auto; list-style: none; cursor: pointer; border-radius: 999px; border: 1px solid rgba(211,218,239,.38); background: rgba(13,19,35,.8); color: #e8ebfa; padding: 10px 23px; font-size: .8rem; letter-spacing: .08em; transition: background .25s ease; }
+.layer-map > summary:hover { background: #1b2644; }
+.layer-map > summary::-webkit-details-marker { display: none; }
+.layer-map > summary span { display: inline-block; margin-left: 9px; transition: transform .3s; }
+.layer-map[open] > summary span { transform: rotate(180deg); }
+.layer-map__sheet { position: absolute; bottom: calc(100% + 14px); left: 0; right: 0; max-height: min(65svh,580px); overflow-y: auto; border-radius: 22px; padding: clamp(17px,3vw,30px); background: linear-gradient(125deg,rgba(6,13,31,.94),rgba(5,7,17,.94)),var(--layer-map-bg,none) center/cover; border: 1px solid rgba(198,217,255,.31); box-shadow: 0 30px 70px rgba(0,0,0,.7); text-align:left; }
+.layer-map__sheet h2 { font-size: clamp(1.25rem,2.4vw,2rem); margin: 7px 0; }
+.layer-map__sheet .contents__intro { margin: 8px 0 22px; font-size: .88rem; color: #cbd7eb; }
+.layer-map__sheet .contents__list { gap: 10px; }
+.layer-map__sheet .contents__list button { min-height: 104px; padding: 12px 8px; }
+@media(max-width:640px) { .layer-map { bottom: 22px; } .layer-map__sheet .contents__list { grid-template-columns:repeat(2,minmax(0,1fr)); } .layer-map__sheet .contents__list button { min-height: 80px; } }
+
+/* Reactivate the intended Big Bang: the old CSS disabled it when the constellation was added. */
+body[data-scene="converge"] #cosmos .bang { display: block !important; }
+body[data-scene="converge"] #cosmos .light { opacity: var(--lo,0) !important; }
+body[data-scene="converge"] .constellation { opacity: .85; }
+body.is-bang .scene--converge .constellation { opacity: .52; transition: opacity .85s; }
+body.is-merged .scene--converge .constellation { opacity: .25; transition: opacity .3s; }
+body.is-bang .bgimg.is-on { animation: shake .5s ease-out; }
+.bang-replay { margin-top: 8px; padding: 8px 17px; border-radius: 999px; background: rgba(15,21,44,.6); border: 1px solid rgba(244,218,166,.5); color: #f3ddb1; cursor: pointer; font-size: .76rem; }
+.bang-replay:hover { background: rgba(42,45,77,.85); }
+body.is-bang .scene--converge .bang-replay { opacity: 1; transform: none; }
+
+/* Activity records stay complete, but no longer force an additional multi-page vertical scroll. */
+.scene--long { min-height: 100svh; align-items: center; padding: 92px 20px 80px; }
+.long { width: min(1140px,100%); max-width: none; }
+.long h2 { font-size: clamp(1.4rem,3vw,2rem); margin: 6px 0 7px; }
+.timeline__hint { color:#d1c5a9; font-size: .75rem; margin-bottom: 16px; }
+.timeline { display: flex; overflow-x: auto; overflow-y: hidden; gap: 16px; width: 100%; padding: 4px 4px 22px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: rgba(230,223,197,.55) transparent; }
+.timeline::before, .tl-item::before { display:none; }
+.tl-item, .tl-item:last-child { flex: 0 0 clamp(240px,33vw,360px); min-height: 310px; max-height: min(54svh,480px); overflow-y: auto; padding: 17px 19px 14px; border-radius: 18px; border:1px solid rgba(207,214,246,.26); background: rgba(8,13,31,.8); box-shadow: 0 13px 30px rgba(0,0,0,.35); scroll-snap-align:start; }
+.tl-title { font-size: clamp(1.05rem,1.7vw,1.26rem); margin: 5px 0 8px; }
+.tl-summary { font-size: .85rem; line-height:1.65; }
+.tl-photos { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 13px; }
+.tl-photos.one { grid-template-columns: minmax(0,1fr); }
+.timeline-outro { display: flex; align-items: center; gap: 13px; margin-top: 12px; padding-top: 7px; font-size: .82rem; border-top: 1px solid rgba(223,224,232,.2); }
+.timeline-outro > span { color:var(--muted); }
+.timeline-outro .next__link { font-size: clamp(.97rem,1.7vw,1.27rem); margin: 0; }
+.timeline-outro .next__home { margin-left: auto; white-space:nowrap; }
+.long > .footer-note { margin-top: 12px; font-size: .7rem; }
+@media(max-width:760px) { .scene--long { padding: 89px 15px 86px; } .tl-item,.tl-item:last-child { flex-basis: min(80vw,318px); max-height: min(51svh,450px); } .timeline-outro { flex-wrap:wrap; gap: 5px 12px; } .timeline-outro .next__home { margin-left: 0; } }
+
+/* Optional compact, anchored next/previous controls reduce repetitive wheel scrolling. */
+.scene-steps { position: fixed; bottom: max(12px,env(safe-area-inset-bottom)); left: 50%; z-index: 40; transform:translateX(-50%); display:flex; align-items:center; gap: 9px; padding: 4px 6px; border-radius: 999px; background:rgba(8,15,30,.77); border:1px solid rgba(227,229,250,.25); box-shadow: 0 10px 30px rgba(0,0,0,.3); backdrop-filter:blur(11px); }
+.scene-steps button { width:30px; height:30px; border-radius:50%; border:1px solid rgba(244,234,211,.25); color:#f0e4ce; background:rgba(255,255,255,.09); cursor:pointer; }
+.scene-steps button:disabled { opacity:.28; cursor:default; }
+.scene-steps #scene-position { text-align:center; min-width: 90px; white-space:nowrap; color:#f2e5cf; font-size:.7rem; }
+.scroll-hint { bottom: 62px; }
+@media(max-width:480px) { .scene-steps { bottom:max(7px,env(safe-area-inset-bottom)); } .scroll-hint { display:none; } .scene--converge .converge { padding-bottom: 38px; } }
+@media(prefers-reduced-motion:reduce) { body[data-scene="converge"] .bang i { animation:none !important; } }
+
+/* V8 QA: do not leave the conclusion blank for several seconds after the burst. */
+body.is-bang .scene.scene--converge.is-active .fx { opacity: 1; transform: none; }
+body.is-bang .scene.scene--converge.is-active .fx:nth-child(1) { transition-delay: 0s !important; }
+body.is-bang .scene.scene--converge.is-active .fx:nth-child(2) { transition-delay: .13s !important; }
+body.is-bang .scene.scene--converge.is-active .fx:nth-child(3) { transition-delay: .27s !important; }
+body.is-bang .scene.scene--converge.is-active .fx:nth-child(4) { transition-delay: .42s !important; }
+body.is-bang .scene.scene--converge.is-active .fx:nth-child(5) { transition-delay: .72s !important; }
+
+/* v9: 1권은 연속 스크롤 전시를 유지. 두 번째 암전 구간만 짧게. */
+html {scroll-snap-type:y proximity !important;}
+.scene--interlude {min-height:clamp(350px,65svh,650px) !important; scroll-snap-align:none !important;}
+.scene--interlude .interlude__inner {padding:46px 0 30px !important;}
+.scene--interlude .interlude__question{max-width:800px;margin-inline:auto;}
+.scene-steps{display:none!important;}
+@media(max-width:640px){.scene--interlude{min-height:clamp(280px,57svh,560px)!important;}.scene--interlude .interlude__inner{padding:26px 0 25px!important;}}
+
+/* v10: 빅뱅 중/이후 별자리 도형과 연결선 완전 제거. 원래 폭발은 유지. */
+.scene--converge .constellation, .constellation__trace, .constellation__inner { display:none !important; }
+
+/* v10: 연결선이 배경 그림(bg-converge.jpg)에도 포함되어 있어, 해당 이미지를 빅뱅에서 사용하지 않습니다. */
+body[data-scene="converge"] .ring {display:none !important;}
+body[data-scene="converge"] .orb {opacity:.17 !important;}
+
+/* v11 — 복원: 살짝 스크롤해도 다음 전시 장면이 화면을 채우는 스냅 */
+html { scroll-snap-type: y mandatory !important; scroll-padding-top: 0 !important; overscroll-behavior-y: contain; }
+.scene { min-height:100svh; scroll-snap-align:start !important; scroll-snap-stop:always !important; }
+.scene--interlude { min-height:100svh !important; scroll-snap-align:start !important; }
+@media(max-width:640px){ .scene--interlude {min-height:100svh !important;} }
+/* 활동 타임라인: 한 화면을 유지하고 카드 내부만 필요할 때 스크롤 */
+.scene--long { min-height:100svh !important; }
+.discussion-actions { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin: 5px 0 14px; }
+.discussion-actions button { color:#f1e9d9; background:rgba(17,27,54,.75); border:1px solid rgba(229,215,183,.35); border-radius:999px; padding:7px 13px; font-size:.77rem; }
+.discussion-actions button:hover {background:rgba(45,67,108,.85)}
+.notes-viewer[hidden]{display:none}
+.notes-viewer {position:fixed; inset:0; z-index:100; display:grid; place-items:center; background:rgba(1,5,14,.82); backdrop-filter:blur(9px); padding:18px}
+.notes-viewer__panel{width:min(680px,100%);max-height:85dvh;overflow-y:auto;padding:clamp(25px,5vw,50px);border:1px solid rgba(224,213,180,.42);border-radius:18px;background:linear-gradient(145deg,#111f3c,#090d1c);box-shadow:0 24px 85px rgba(0,0,0,.6);color:#ecebf4}
+.notes-viewer__close{float:right;border:0;background:rgba(255,255,255,.12);color:white;border-radius:50%;width:36px;height:36px}
+.notes-viewer__panel h3{font-size:clamp(1.3rem,3.4vw,2rem);margin:14px 0;color:#f2e6bf}
+.notes-viewer__panel p{line-height:1.8;color:#d3d7e7;margin:12px 0}
+.notes-viewer__panel li{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);line-height:1.7}
+@media(max-width:560px){.discussion-actions{gap:5px}.discussion-actions button{font-size:.68rem;padding:7px 10px}}
+
+/* v11 mobile cover: 모든 텍스트와 실제 책 표지가 한 장면 안에 표시되도록 압축 */
+@media (max-width:480px){
+  .scene--cover{padding:60px 18px 30px;}
+  .cover{gap:14px;}
+  .book3d{width:min(164px,42vw);}
+  .cover__eyebrow{margin-bottom:7px;font-size:.7rem}
+  .cover__title{font-size:clamp(1.9rem,8.1vw,2.35rem);margin-bottom:5px;}
+  .cover__author{font-size:.86rem;margin-bottom:10px;}
+  .cover__tag{font-size:.92rem;line-height:1.45;margin-bottom:12px;}
+  .cover__summary{font-size:.81rem;line-height:1.67;margin-bottom:15px;}
+  .cover__actions .btn-ghost{padding:8px 15px;font-size:.78rem;}
+}
+
+
+/* v13: 네 개의 빛이 실제로 보이고, 독립된 색을 지닌 채 충돌하는 빅뱅. */
+.bang-seeds,.bang-afterglow{position:absolute;inset:0;pointer-events:none;opacity:0;visibility:hidden}
+body[data-scene="converge"] .orb,body[data-scene="converge"] .ring,body[data-scene="converge"] .lights{display:none!important}
+body[data-scene="converge"] .bgimg{opacity:0!important;transition:opacity .5s ease}
+body[data-scene="converge"] #cosmos{background:#040610}
+body[data-scene="converge"] .nebula{opacity:.2}
+body[data-scene="converge"].is-connected .bang-seeds{opacity:1;visibility:visible}
+body[data-scene="converge"].is-bang .bang-seeds{opacity:0;visibility:hidden;transition:opacity .12s,visibility 0s .12s}
+.bang-seed{position:absolute;left:50%;top:29%;width:clamp(24px,5.7vmin,52px);height:clamp(24px,5.7vmin,52px);transform:translate(-50%,-50%) translate(var(--sx),var(--sy));opacity:0;will-change:transform,opacity;--h:clamp(68px,15vmin,170px);--v:clamp(47px,10vmin,110px)}
+.bang-seed--atom{--seed:#8fe8ff;--sx:calc(-1 * var(--h));--sy:calc(-1 * var(--v));--mx:calc(-.6 * var(--h));--my:calc(-1.0 * var(--v))}
+.bang-seed--life{--seed:#7be0b0;--sx:var(--h);--sy:calc(-1 * var(--v));--mx:var(--h);--my:calc(-.35 * var(--v))}
+.bang-seed--human{--seed:#ffb57a;--sx:calc(-1 * var(--h));--sy:var(--v);--mx:calc(-.9 * var(--h));--my:calc(.25 * var(--v))}
+.bang-seed--universe{--seed:#c7a3ff;--sx:var(--h);--sy:var(--v);--mx:calc(.35 * var(--h));--my:var(--v)}
+.bang-seed i{display:block;position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0 12%,var(--seed) 20% 42%,transparent 76%);box-shadow:0 0 18px var(--seed),0 0 38px var(--seed),0 0 65px color-mix(in srgb,var(--seed),transparent 52%);animation:seed-breathe 1.6s ease-in-out infinite alternate}
+.bang-seed i::before{content:"";position:absolute;left:50%;top:50%;width:170%;height:170%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--seed),transparent 83%),transparent 65%)}
+.bang-seed span{position:absolute;left:50%;top:calc(100% + 14px);transform:translateX(-50%);font:500 clamp(.64rem,1.45vmin,.83rem)/1.3 var(--sans);white-space:nowrap;color:var(--seed);letter-spacing:.04em;text-shadow:0 0 12px var(--seed)}
+body.is-connected .bang-seed{animation:seed-collision 2.95s cubic-bezier(.36,.05,.38,1) both}
+body.is-connected .bang-seed span{animation:seed-label 2.95s ease both}
+@keyframes seed-breathe{from{transform:scale(.95)}to{transform:scale(1.16)}}
+@keyframes seed-collision{0%{opacity:0;transform:translate(-50%,-50%) translate(var(--sx),var(--sy)) scale(.72)}16%,34%{opacity:1;transform:translate(-50%,-50%) translate(var(--sx),var(--sy)) scale(1)}62%{opacity:1;transform:translate(-50%,-50%) translate(var(--mx),var(--my)) scale(.98)}88%{opacity:1;transform:translate(-50%,-50%) translate(calc(var(--sx)*.17),calc(var(--sy)*.17)) scale(.89)}100%{opacity:1;transform:translate(-50%,-50%) scale(.62)}}
+@keyframes seed-label{0%,6%{opacity:0}18%,40%{opacity:1}72%,100%{opacity:0}}
+body[data-scene="converge"] .bang{top:29%;z-index:5}
+body[data-scene="converge"] .bang__flash{width:62vmax;height:62vmax;background:radial-gradient(circle,#fff 0 5%,#fff6dd 10%,#d7b7ffb0 20%,#91d9ff40 39%,transparent 67%)}
+body[data-scene="converge"] .bang__ring{border-color:#8fe8ff;box-shadow:0 0 22px #8fe8ff77,inset 0 0 19px #8fe8ff44}
+body[data-scene="converge"] .bang__ring--2{border-color:#7be0b0;box-shadow:0 0 20px #7be0b077}
+body[data-scene="converge"] .bang__ring--3{border-color:#ffb57a;box-shadow:0 0 20px #ffb57a77}
+body[data-scene="converge"] .bang__ring--4{border-color:#c7a3ff;box-shadow:0 0 20px #c7a3ff77}
+body.is-bang .bang__ring--4{animation-delay:.49s;animation-duration:3s}
+.bang-afterglow{background:radial-gradient(ellipse at 35% 16%,#8fe8ff30,transparent 39%),radial-gradient(ellipse at 64% 16%,#7be0b027,transparent 39%),radial-gradient(ellipse at 33% 42%,#ffb57a26,transparent 39%),radial-gradient(ellipse at 68% 41%,#c7a3ff2b,transparent 43%);transform:scale(.8);transition:opacity 1.4s ease,transform 3.5s ease}
+body[data-scene="converge"].is-bang .bang-afterglow{opacity:.9;visibility:visible;transform:scale(1.25)}
+body[data-scene="converge"].is-bang:not(.is-resolved) .scene--converge.is-active .fx{opacity:0;transform:translateY(20px)}
+body[data-scene="converge"].is-resolved .scene--converge.is-active .fx{opacity:1;transform:none}
+@media(max-width:480px){.bang-seed{--h:clamp(65px,22vw,100px);--v:clamp(47px,15vw,66px)}}
+@media(prefers-reduced-motion:reduce){.bang-seeds,.bang-afterglow{display:none!important}}
+
+/* v13: keep the four layer layouts stable while background photos cross-fade.
+   This prevents scroll-snap destinations shifting when the Big Bang removes the photo. */
+.scene--layer .layer{grid-template-columns:minmax(0,560px);justify-content:start;gap:22px}
+.scene--layer .layer--flip{justify-content:end}
+.scene--layer .layer__photo,.scene--layer .layer--flip .layer__photo{order:1;align-items:flex-start}
+.scene--layer .frame{max-width:300px;aspect-ratio:4/3}
+.scene--layer .layer__caption{text-align:left}
+.scene--layer .layer__quote{background:rgba(5,7,15,.45);backdrop-filter:blur(3px)}
+@media(max-width:900px){.scene--layer .layer,.scene--layer .layer--flip{justify-content:start}}
+
+
+/* v14 — 한 번에 읽히는 활동 기록. 카드 자체에는 스크롤 영역을 만들지 않는다. */
+.timeline{align-items:stretch;gap:18px;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scroll-snap-type:x mandatory;}
+.timeline .tl-item,.timeline .tl-item:last-child{flex:0 0 clamp(310px,34vw,390px);min-height:0;max-height:none;height:auto;overflow:visible;display:flex;flex-direction:column;padding:18px 20px;scroll-snap-align:start;}
+.tl-title{line-height:1.45;word-break:keep-all;overflow-wrap:anywhere;}
+.tl-summary{font-size:.91rem;line-height:1.72;}
+.tl-photos{margin-top:auto;padding-top:16px;gap:9px;}
+.timeline .tl-photos .frame{margin:0;max-width:none;width:100%;aspect-ratio:16/11;height:auto;}
+.timeline .tl-photos.one .frame{aspect-ratio:auto;height:clamp(100px,19vh,150px);}
+.timeline .tl-photos .frame img{object-fit:cover;}
+.tl-readmore{align-self:flex-start;margin-top:10px;border:0;background:none;padding:4px 0;color:var(--gold);font-size:.83rem;text-decoration:underline;text-underline-offset:4px;}
+@media(max-width:760px){
+  .scene--long{padding:72px 16px 66px;}
+  .timeline{gap:12px;padding:4px 4px 15px;}
+  .timeline .tl-item,.timeline .tl-item:last-child{flex-basis:min(82vw,335px);padding:14px 15px;}
+  .tl-title{font-size:1.08rem;}
+  .tl-summary{font-size:.86rem;line-height:1.65;}
+  .tl-photos{padding-top:12px;}
+  .timeline .tl-photos.one .frame{height:clamp(100px,17svh,130px);}
+}
+@media(max-height:760px){.scene--long{padding-top:65px;padding-bottom:62px;}.timeline .tl-photos .frame{aspect-ratio:auto;height:clamp(80px,15svh,120px)}.timeline .tl-photos.one .frame{height:clamp(80px,15svh,120px)}.long .footer-note{margin-top:8px}.timeline__hint{margin-bottom:9px}.discussion-actions{margin-bottom:8px}}
